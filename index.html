@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>함수방정식과 미분계수</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f8fafc; }
+        .math-display { font-size: 1.1rem; margin: 1.5rem 0; padding: 1.2rem; background-color: #ffffff; border-left: 4px solid #3b82f6; border-radius: 0.5rem; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-x: auto; }
+        .concept-box { background-color: #eff6ff; border-radius: 0.75rem; padding: 1.5rem; margin-bottom: 1.5rem; border: 1px solid #dbeafe; }
+        .option-label { transition: all 0.2s; cursor: pointer; display: block; }
+        .option-label:hover { background-color: #eff6ff; transform: translateY(-2px); border-color: #3b82f6; }
+        .page { display: none; } .page.active { display: block; animation: fadeIn 0.5s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+    </style>
+</head>
+<body class="p-4 sm:p-8 md:p-12 text-slate-800">
+    <div id="app" class="max-w-4xl mx-auto bg-white shadow-2xl rounded-3xl p-6 sm:p-10 border border-slate-100">
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-center text-slate-900 mb-2">함수방정식과 미분계수</h1>
+        <p class="text-center text-slate-500 mb-8">10단계 빌드업 변형문제</p>
+        <div id="page-study" class="page active">
+            <h2 class="text-2xl font-bold text-slate-800 mb-6 border-b pb-2">핵심 원리</h2>
+            <div class="concept-box">
+                <h3 class="text-xl font-bold text-blue-600 mb-3">$f(x+y) = f(x) + f(y) + xy$ 형태</h3>
+                <p class="text-slate-700 mb-2">양변을 $x$에 대해 미분하면 관계식을 얻습니다.</p>
+                <div class="math-display">$$f'(x+y) = f'(x) + y \\Rightarrow f'(x) = f'(0) + x$$</div>
+            </div>
+            <div class="concept-box">
+                <h3 class="text-xl font-bold text-blue-600 mb-3">미분계수 결정</h3>
+                <div class="math-display">$$f'(0) = 2 \\Rightarrow f'(3) = 2 + 3 = 5$$</div>
+            </div>
+            <div class="mt-8 mb-4">
+                <label for="username-input" class="block text-sm font-medium text-slate-600 mb-1">학생 이름</label>
+                <input type="text" id="username-input" placeholder="이름을 입력하세요" class="w-full p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition shadow-sm outline-none">
+            </div>
+            <button onclick="startQuiz()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl mt-2 transition duration-300 shadow-lg">문제 풀이 시작하기</button>
+        </div>
+        <div id="page-quiz" class="page">
+            <div id="quiz-header" class="mb-6"><div class="flex justify-between items-end mb-2"><span class="text-lg font-bold text-blue-700">Step <span id="current-q-number">1</span></span><span class="text-sm text-slate-400">Total 10 Questions</span></div><div class="w-full bg-slate-100 rounded-full h-2"><div id="progress-bar" class="bg-blue-600 h-2 rounded-full transition-all duration-500" style="width: 0%"></div></div></div>
+            <div id="question-area" class="min-h-[250px] p-6 bg-slate-50 rounded-2xl border border-slate-200"><p id="question-text" class="text-xl font-medium text-slate-800 mb-8 leading-relaxed"></p><div id="options-container" class="space-y-3"></div></div>
+            <div id="feedback" class="mt-6 p-4 rounded-xl text-white font-semibold hidden"></div>
+            <div class="flex gap-3 mt-8"><button onclick="prevQuestion()" id="prev-btn" class="hidden px-6 bg-slate-200 hover:bg-slate-300 text-slate-700 font-bold py-4 rounded-xl transition shadow-sm">이전</button><button onclick="submitAnswer()" id="submit-btn" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-4 rounded-xl transition shadow-md">정답 확인</button><button onclick="nextQuestion()" id="next-btn" class="hidden flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition shadow-md">다음 단계</button></div>
+        </div>
+        <div id="page-results" class="page text-center p-8"><div class="mb-6 text-6xl animate-pulse">🏆</div><h2 class="text-3xl font-extrabold text-slate-800 mb-2">학습 완료!</h2><div class="text-7xl font-black text-blue-600 my-8"><span id="final-score">0</span><span class="text-3xl text-slate-400">/10</span></div><div id="upload-status" class="text-sm text-slate-500 mb-8 h-6 font-medium">결과 저장 완료</div><button onclick="window.location.reload()" class="bg-white border-2 border-slate-900 text-slate-900 hover:bg-slate-50 font-bold py-3 px-8 rounded-xl transition shadow-sm">다시 도전하기</button></div>
+    </div>
+    <script>
+        const GOOGLE_SCRIPT_URL='';let currentQuestionIndex=0;let userName="";let userAnswers=[];
+        const questions=[
+            {q:"$f(x+y) = f(x) + f(y)$, $f'(0) = 3$일 때, $f'(5)$의 값은?",options:["$0$","$3$","$5$","$15$"],ans:"$3$",exp:"$f(x) = 3x$이므로 $f'(x) = 3$ (상수)"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$에서 $y = 0$을 대입하면?",options:["$f(x) = f(0)$","$f(x) = f(x)$","$f(x) = 2f(x)$","$f(0) = 0$"],ans:"$f(0) = 0$",exp:"$f(x) = f(x) + f(0) + 0$이므로 $f(0) = 0$"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$, $f'(0) = 1$일 때, $f'(x) = ?$",options:["$1$","$x$","$1 + x$","$x + 1$"],ans:"$1 + x$",exp:"양변을 미분하면 $f'(x) = f'(0) + x = 1 + x$"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$, $f'(0) = 2$일 때, $f'(3)$의 값은?",options:["$2$","$3$","$5$","$6$"],ans:"$5$",exp:"$f'(x) = 2 + x$이므로 $f'(3) = 5$"},
+            {q:"$f(x+y) = f(x) + f(y) + 2xy$, $f'(0) = 1$일 때, $f'(x) = ?$",options:["$1$","$1 + x$","$1 + 2x$","$2x$"],ans:"$1 + 2x$",exp:"미분하면 $f'(x) = f'(0) + 2x = 1 + 2x$"},
+            {q:"$f(x+y) = f(x) + f(y) + 2xy$, $f'(0) = 3$일 때, $f'(2)$의 값은?",options:["$5$","$6$","$7$","$8$"],ans:"$7$",exp:"$f'(x) = 3 + 2x$이므로 $f'(2) = 7$"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$, $f'(0) = 0$일 때, $f'(4)$의 값은?",options:["$0$","$2$","$4$","$8$"],ans:"$4$",exp:"$f'(x) = x$이므로 $f'(4) = 4$"},
+            {q:"$f(x+y) = f(x) + f(y) + 3xy$, $f'(0) = 2$일 때, $f'(1)$의 값은?",options:["$2$","$3$","$4$","$5$"],ans:"$5$",exp:"$f'(x) = 2 + 3x$이므로 $f'(1) = 5$"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$를 만족하는 $f(x)$의 형태는?",options:["$ax$","$ax + bx^2$","$ax + \\dfrac{x^2}{2}$","$\\dfrac{x^2}{2}$"],ans:"$ax + \\dfrac{x^2}{2}$",exp:"적분하면 $f(x) = f'(0)x + \\dfrac{x^2}{2}$"},
+            {q:"$f(x+y) = f(x) + f(y) + xy$, $f'(0) = 2$일 때, $f'(3)$의 값은?",options:["$3$","$4$","$5$","$6$"],ans:"$5$",exp:"$f'(x) = 2 + x$이므로 $f'(3) = 5$"}
+        ];
+        userAnswers=new Array(questions.length).fill(null);
+        function renderMath(el){renderMathInElement(el||document.body,{delimiters:[{left:"$$",right:"$$",display:true},{left:"$",right:"$",display:false}],throwOnError:false});}
+        function showPage(id){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));document.getElementById(id).classList.add('active');}
+        function startQuiz(){userName=document.getElementById('username-input').value.trim();if(!userName)return alert("이름을 입력해주세요!");showPage('page-quiz');loadQuestion();}
+        function loadQuestion(){const q=questions[currentQuestionIndex];document.getElementById('current-q-number').textContent=currentQuestionIndex+1;document.getElementById('question-text').innerHTML=q.q;document.getElementById('progress-bar').style.width=`${(currentQuestionIndex/questions.length)*100}%`;const optContainer=document.getElementById('options-container');optContainer.innerHTML='';const existingAnswer=userAnswers[currentQuestionIndex];q.options.forEach(opt=>{const label=document.createElement('label');label.className="option-label block p-4 bg-white border border-slate-200 rounded-xl shadow-sm";const isChecked=existingAnswer&&existingAnswer.selected===opt;label.innerHTML=`<div class="flex items-center"><input type="radio" name="quiz-opt" value="${opt}" class="w-5 h-5 text-blue-600 mr-3" ${isChecked?'checked':''} ${existingAnswer?'disabled':''}><span class="text-lg">${opt}</span></div>`;optContainer.appendChild(label);});document.getElementById('prev-btn').classList.toggle('hidden',currentQuestionIndex===0);if(existingAnswer){showFeedbackUI(existingAnswer.isCorrect,q.ans,q.exp);document.getElementById('submit-btn').classList.add('hidden');document.getElementById('next-btn').classList.remove('hidden');}else{document.getElementById('feedback').classList.add('hidden');document.getElementById('submit-btn').classList.remove('hidden');document.getElementById('next-btn').classList.add('hidden');}renderMath(document.getElementById('question-area'));}
+        function showFeedbackUI(isCorrect,ans,exp){const fb=document.getElementById('feedback');fb.classList.remove('hidden');fb.className=`mt-6 p-5 rounded-xl text-white shadow-lg ${isCorrect?'bg-emerald-500':'bg-rose-500'}`;fb.innerHTML=`<div class="flex items-center mb-2"><span class="text-2xl mr-2">${isCorrect?'🎉':'❌'}</span><span class="text-lg font-bold">${isCorrect?"정답입니다!":"아쉽네요."}</span></div>${!isCorrect?`<div class="mb-2">정답: <strong>${ans}</strong></div>`:''}<div class="text-sm opacity-90 border-t border-white/20 pt-2 mt-2">${exp}</div>`;renderMath(fb);}
+        function submitAnswer(){const selected=document.querySelector('input[name="quiz-opt"]:checked');if(!selected)return alert("보기를 선택해주세요!");const q=questions[currentQuestionIndex];const isCorrect=selected.value.replace(/\s/g,'')===q.ans.replace(/\s/g,'');userAnswers[currentQuestionIndex]={selected:selected.value,isCorrect};showFeedbackUI(isCorrect,q.ans,q.exp);document.querySelectorAll('input[name="quiz-opt"]').forEach(r=>r.disabled=true);document.getElementById('submit-btn').classList.add('hidden');document.getElementById('next-btn').classList.remove('hidden');}
+        function prevQuestion(){if(currentQuestionIndex>0){currentQuestionIndex--;loadQuestion();}}
+        function nextQuestion(){currentQuestionIndex++;if(currentQuestionIndex<questions.length)loadQuestion();else finishQuiz();}
+        function finishQuiz(){showPage('page-results');document.getElementById('final-score').textContent=userAnswers.filter(a=>a&&a.isCorrect).length;}
+        window.onload=()=>renderMath();
+    </script>
+</body>
+</html>
